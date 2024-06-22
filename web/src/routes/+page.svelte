@@ -10,6 +10,7 @@
     nonvipsRank,
     bitsRank,
     subsRank,
+    positiveRank,
     type RankingInfo
   } from '$lib/ranks';
   import { sanitizeString } from '$lib';
@@ -24,9 +25,10 @@
     'Only Chat Messages',
     'Copypasta Leaders',
     'Bits',
-    'Subs'
+    'Subs',
+    'Positivity'
   ];
-  $: ranking = [$overallRank, $nonvipsRank, $chatOnlyRank, $copypastaRank, $bitsRank, $subsRank];
+  $: ranking = [$overallRank, $nonvipsRank, $chatOnlyRank, $copypastaRank, $bitsRank, $subsRank, $positiveRank];
 
   function navigatePage(offset: number) {
     activeIndex = (activeIndex + offset) % ranking.length;

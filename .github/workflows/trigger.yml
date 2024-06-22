@@ -36,6 +36,7 @@ jobs:
     - name: Run score calculation
       env:
         ACT: ${{ vars.ACT }}
+        DEBUG: ${{ vars.DEBUG }}
         TWITCH_APPID: ${{ secrets.TWITCH_APPID }}
         TWITCH_APPSECRET: ${{ secrets.TWITCH_APPSECRET }}
       working-directory: chatdownloader/

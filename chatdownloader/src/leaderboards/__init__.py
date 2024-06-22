@@ -8,7 +8,8 @@ from .copypastaleaders import CopypastaLeaders
 from .nonvips import NonVIPS
 from .bitsonly import BitsOnly
 from .subsonly import SubsOnly
+from .sentiment import Sentiment
 
 
 EXPORTED_LEADERBOARDS = [Overall, ChatOnly, CopypastaLeaders,
-                         NonVIPS, BitsOnly, SubsOnly]
+                         NonVIPS, BitsOnly, SubsOnly, Sentiment]
