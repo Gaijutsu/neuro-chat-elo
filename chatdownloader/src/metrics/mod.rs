@@ -20,7 +20,7 @@ fn spawn_thread<M>(
     mut reciever: broadcast::Receiver<(Comment, u32)>,
 ) -> JoinHandle<()>
 where
-    M: AbstractMetric + Sync + Send + 'static,
+    M: AbstractMetric + Send + Clone + 'static,
 {
     /*
     Spawn a thread to update the metadata based on chat messages sent by a tokio broadcast channel

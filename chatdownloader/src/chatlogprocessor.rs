@@ -1,5 +1,5 @@
 use core::panic;
-use log::{debug, info};
+use log::{debug, info, warn};
 use std::time::Instant;
 use std::{collections::HashMap, fs};
 use tokio::sync::broadcast;
@@ -126,7 +126,25 @@ pub fn spawn_user_chat_perforance_thread(
                     for (user_id, met_value) in metadata_update.iter() {
                         get_performance_or_default(&mut user_performances, user_id, &metrics, &metadatas);
                         if let Some(user_chat_performance) = user_performances.get_mut(user_id) {
-                            if let Some(metadata_value) = user_chat_performance.metadata.get_mut(&metadata_name) {
+                            if metadata_name == "basic_info" {
+                                let (username, avatar) = match met_value.get_basic_info() {
+                                    Some((username, avatar)) => (username, avatar),
+                                    None => {warn!("Could not get username and/or url"); ("".to_string(), "".to_string())}
+                                };
+                                user_chat_performance.username = username;
+                                user_chat_performance.avatar = avatar;
+                            } else if metadata_name == "emote" {
+                                let (username, avatar) = match met_value.get_basic_info() {
+                                    Some((username, avatar)) => (username, avatar),
+                                    None => {warn!("Could not get emote name and url"); ("".to_string(), "".to_string())}
+                                };
+                                user_chat_performance.username = username;
+                                user_chat_performance.avatar = avatar;
+                                // Set the emote metadata to true
+                                if let Some(metadata_value) = user_chat_performance.metadata.get_mut(&metadata_name) {
+                                    *metadata_value = MetadataTypes::Bool(true);
+                                }
+                            } else if let Some(metadata_value) = user_chat_performance.metadata.get_mut(&metadata_name) {
                                 *metadata_value = met_value.clone();
                                 debug!("Updating metadata: {} with value: {:?}", metadata_name, met_value);
                             }

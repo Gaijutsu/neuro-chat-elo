@@ -8,7 +8,7 @@ use std::collections::HashMap;
 
 const WEIGHT_BITS: f32 = 0.1;
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Clone)]
 pub struct Bits;
 
 impl AbstractMetric for Bits {

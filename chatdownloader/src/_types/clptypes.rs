@@ -3,6 +3,7 @@ use std::collections::HashMap;
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct UserChatPerformance {
+    // Combine into discrimnator enum
     pub id: String,
     pub username: String,
     pub avatar: String,
@@ -17,9 +18,16 @@ pub struct BadgeInformation {
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct SevenTVEmote {
+    pub name: String,
+    pub emote_url: String,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub enum MetadataTypes {
     Bool(bool),
     BadgeList(Vec<BadgeInformation>),
+    BasicInfo((String, String)),
 }
 
 impl MetadataTypes {
@@ -32,6 +40,12 @@ impl MetadataTypes {
     pub fn get_bool(&self) -> Option<&bool> {
         match self {
             MetadataTypes::Bool(b) => Some(b),
+            _ => None,
+        }
+    }
+    pub fn get_basic_info(&self) -> Option<(String, String)> {
+        match self {
+            MetadataTypes::BasicInfo(basic_info) => Some(basic_info.clone()),
             _ => None,
         }
     }

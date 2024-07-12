@@ -1,6 +1,8 @@
 pub mod badges;
 pub mod metadatatrait;
 pub mod special_role;
+pub mod emotes;
+pub mod basic_info;
 
 use log::warn;
 use std::collections::HashMap;
@@ -59,14 +61,28 @@ pub async fn get_metadata(
     let (mpsc_sender, mpsc_receiver) = mpsc::channel(100000);
 
     // Initialize the metadata
+    let basic_info = basic_info::BasicInfo::new(twitch).await;
+    let emotes = emotes::Emotes::new(twitch).await;
     let badges = badges::Badges::new(twitch).await;
     let special_role = special_role::SpecialRole::new(twitch).await;
 
     // Add names and default values to the metadata
+    metadata.insert(basic_info.get_name(), basic_info.get_default_value());
+    metadata.insert(emotes.get_name(), emotes.get_default_value());
     metadata.insert(badges.get_name(), badges.get_default_value());
     metadata.insert(special_role.get_name(), special_role.get_default_value());
 
     // Spawn threads for each metadata
+    handles.push(spawn_thread(
+        basic_info,
+        mpsc_sender.clone(),
+        broadcast_receiver.resubscribe(),
+    ));
+    handles.push(spawn_thread(
+        emotes,
+        mpsc_sender.clone(),
+        broadcast_receiver.resubscribe(),
+    ));
     handles.push(spawn_thread(
         badges,
         mpsc_sender.clone(),

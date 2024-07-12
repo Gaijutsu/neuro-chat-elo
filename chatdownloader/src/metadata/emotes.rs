@@ -1,25 +1,20 @@
 /*
-The emote metric
+This module enables a top emotes leaderboard. User chat performances can also represent emotes, so thier avatar and display name are assigned based on the 7tv emotes.
 */
-
+use log::{debug, info};
 use std::collections::HashMap;
 
-use log::{debug, info};
-
 use crate::_constants::SEVEN_TV_URL;
-use crate::_types::clptypes::SevenTVEmote;
+use crate::_types::clptypes::{MetadataTypes, SevenTVEmote};
 use crate::_types::twitchtypes::{ChatMessageFragment, Comment};
+use crate::metadata::metadatatrait::AbstractMetadata;
+use crate::twitch_utils::TwitchAPIWrapper;
 
-use super::metrictrait::AbstractMetric;
-
-const WEIGHT_EMOTES: f32 = 0.02;
-
-#[derive(Default, Debug, Clone)]
-pub struct Emote {
+pub struct Emotes {
     seventv_emotes: HashMap<String, SevenTVEmote>,
 }
 
-impl Emote {
+impl Emotes {
     fn get_7tv_emotes_in_fragment(&self, fragment: &ChatMessageFragment) -> Vec<SevenTVEmote> {
         let mut result: Vec<SevenTVEmote> = Vec::new();
         for word in fragment.text.split(' ') {
@@ -32,8 +27,8 @@ impl Emote {
     }
 }
 
-impl AbstractMetric for Emote {
-    async fn new() -> Self {
+impl AbstractMetadata for Emotes {
+    async fn new(_twitch: &TwitchAPIWrapper) -> Self {
         info!("Getting the 7TV channel emotes");
         let response = reqwest::get(SEVEN_TV_URL.clone()).await;
         if response.is_err() {
@@ -71,39 +66,23 @@ impl AbstractMetric for Emote {
         }
     }
 
-    fn can_parallelize(&self) -> bool {
-        false
-    }
-
     fn get_name(&self) -> String {
-        String::from("emote")
+        "emote".to_string()
     }
 
-    fn get_metric(
-        &mut self,
+    fn get_default_value(&self) -> MetadataTypes {
+        MetadataTypes::Bool(false)
+    }
+
+    fn get_metadata(
+        &self,
         comment: Comment,
         _sequence_no: u32,
-    ) -> (String, HashMap<String, f32>) {
-        let mut emotes: HashMap<String, usize> = HashMap::new();
-        let metric = comment
-            .message
-            .fragments
-            .iter()
-            .map(|fragment| {
-            let mut emote_count = 0;
-            for emote in self.get_7tv_emotes_in_fragment(fragment) {
-                *emotes.entry(emote.name).or_insert(0) += 1;
-                emote_count += 1;
-            }
-            (fragment.emoticon.is_some() as u16 as f32 + emote_count as f32) * WEIGHT_EMOTES
-            })
-            .sum();
-
-        let mut result: HashMap<String, f32> = emotes.iter()
-            .map(|(emote, count)| (emote.clone(), *count as f32))
+    ) -> (String, HashMap<String, MetadataTypes>) {
+        let metadata: HashMap<String, MetadataTypes> = comment.message.fragments.iter()
+            .flat_map(|fragment| self.get_7tv_emotes_in_fragment(fragment))
+            .map(|emote| (emote.name.clone(), MetadataTypes::BasicInfo((emote.name.clone(), emote.emote_url.clone()))))
             .collect();
-        result.insert(comment.commenter._id, metric);
-
-        (self.get_name(), result)
+        (self.get_name(), metadata)
     }
 }

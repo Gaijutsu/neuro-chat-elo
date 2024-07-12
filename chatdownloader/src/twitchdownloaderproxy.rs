@@ -95,10 +95,10 @@ impl TwitchChatDownloader {
             self.download_executable().await?;
         }
 
-        let output_file = Builder::new().suffix(".json").tempfile()?.into_temp_path();
-        let output_path: String = output_file.to_str().unwrap().to_string().clone();
-        output_file.close()?;
-        // let output_path = "chat.json";
+        // let output_file = Builder::new().suffix(".json").tempfile()?.into_temp_path();
+        // let output_path: String = output_file.to_str().unwrap().to_string().clone();
+        // output_file.close()?;
+        let output_path = "chat.json";
 
         let status = Command::new(&self.executable_path)
             .args(["chatdownload", "-u", vod_id, "-o", &output_path])

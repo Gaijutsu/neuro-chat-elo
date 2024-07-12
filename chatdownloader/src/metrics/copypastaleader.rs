@@ -9,7 +9,7 @@ const WEIGHT_COPYPASTA: f32 = 0.3;
 const CHAIN_GRACE: u32 = 10;
 const MATCHING_THRESHOLD: f32 = 0.6;
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Clone)]
 pub struct CopypastaLeader {
     history: Vec<(u32, String, String, u32)>,
 }

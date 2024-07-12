@@ -8,7 +8,7 @@ use std::collections::HashMap;
 
 const WEIGHT_TEXT: f32 = 0.02;
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Clone)]
 pub struct Text;
 
 impl AbstractMetric for Text {

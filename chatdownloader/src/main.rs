@@ -12,7 +12,7 @@ use env_logger::Env;
 use log::info;
 use std::{env, process::exit};
 
-#[tokio::main]
+#[tokio::main(flavor = "multi_thread")]
 async fn main() {
     let env = Env::default()
         .filter_or("MY_LOG_LEVEL", "info")
@@ -34,14 +34,14 @@ async fn main() {
 
     info!("Script triggered, pulling logs for VOD ID: {}...", vod_id);
 
-    let mut downloader = twitchdownloaderproxy::TwitchChatDownloader::new();
-    let chat_log = match downloader.download_chat(&vod_id).await {
-        Ok(chat_log) => chat_log,
-        Err(e) => panic!("Failed to download chat: {e:?}"),
-    };
-    // let chat_log = processor.__parse_to_log_struct("chat.json".to_string());
+    // let mut downloader = twitchdownloaderproxy::TwitchChatDownloader::new();
+    // let chat_log = match downloader.download_chat(&vod_id).await {
+    //     Ok(chat_log) => chat_log,
+    //     Err(e) => panic!("Failed to download chat: {e:?}"),
+    // };
 
     let processor = chatlogprocessor::ChatLogProcessor::new(&twitch);
+    let chat_log = processor.__parse_to_log_struct("chat.json".to_string());
     let user_performances = processor.parse_from_log_object(chat_log).await;
     chatlogprocessor::ChatLogProcessor::export_to_leaderboards(user_performances);
 }

@@ -19,7 +19,7 @@ lazy_static! {
     ).unwrap();
 }
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Clone)]
 pub struct Subs;
 
 impl AbstractMetric for Subs {
