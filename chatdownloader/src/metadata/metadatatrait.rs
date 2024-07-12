@@ -2,10 +2,10 @@
 Represents an abstract metadata
 */
 
-use std::collections::HashMap;
-use crate::_types::twitchtypes::Comment;
 use crate::_types::clptypes::MetadataTypes;
+use crate::_types::twitchtypes::Comment;
 use crate::twitch_utils::TwitchAPIWrapper;
+use std::collections::HashMap;
 
 pub trait AbstractMetadata: Sized {
     /*
@@ -15,29 +15,35 @@ pub trait AbstractMetadata: Sized {
     if it needs to make API calls
     */
 
-    async fn new(twitch: &TwitchAPIWrapper) -> Self where Self: Sized + Send;
-        /*
-        Create a new metadata object
+    async fn new(twitch: &TwitchAPIWrapper) -> Self
+    where
+        Self: Sized + Send;
+    /*
+    Create a new metadata object
 
-        :param twitch: A TwitchAPIWrapper object
-        */
+    :param twitch: A TwitchAPIWrapper object
+    */
 
     fn get_name(&self) -> String;
-        /*
-        Name of this piece of metadata
-        */
-        
+    /*
+    Name of this piece of metadata
+    */
+
     fn get_default_value(&self) -> MetadataTypes;
-        /*
-        Get the default value for this metadata
-        */
+    /*
+    Get the default value for this metadata
+    */
 
-    fn get_metadata(&self, comment: Comment, sequence_no: u32) -> (String, HashMap<String, MetadataTypes>);
-        /*
-        Get information about a user from a chat message
+    fn get_metadata(
+        &self,
+        comment: Comment,
+        sequence_no: u32,
+    ) -> (String, HashMap<String, MetadataTypes>);
+    /*
+    Get information about a user from a chat message
 
-        :param: comment A comment from the user
-        :returns: A partial update to a user's metadata (dictionary of
-                  username to value)
-        */
+    :param: comment A comment from the user
+    :returns: A partial update to a user's metadata (dictionary of
+              username to value)
+    */
 }

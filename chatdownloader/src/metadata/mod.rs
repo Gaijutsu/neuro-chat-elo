@@ -1,20 +1,26 @@
-pub mod metadatatrait;
 pub mod badges;
+pub mod metadatatrait;
 pub mod special_role;
 
-use std::collections::HashMap;
 use log::warn;
+use std::collections::HashMap;
 use tokio::sync::broadcast;
 use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
 
 use crate::_types::clptypes::MetadataTypes;
 use crate::_types::twitchtypes::Comment;
-use crate::twitch_utils::TwitchAPIWrapper;
 use crate::metadata::metadatatrait::AbstractMetadata;
+use crate::twitch_utils::TwitchAPIWrapper;
 
-fn spawn_thread<M>(metric: M, sender: mpsc::Sender<(String, HashMap<String, MetadataTypes>)>, mut reciever: broadcast::Receiver<(Comment, u32)>) -> JoinHandle<()>  
-        where M: AbstractMetadata + Sync + Send + 'static {
+fn spawn_thread<M>(
+    metric: M,
+    sender: mpsc::Sender<(String, HashMap<String, MetadataTypes>)>,
+    mut reciever: broadcast::Receiver<(Comment, u32)>,
+) -> JoinHandle<()>
+where
+    M: AbstractMetadata + Sync + Send + 'static,
+{
     /*
     Spawn a thread to update the metadata based on chat messages sent by a tokio broadcast channel
     */
@@ -26,7 +32,7 @@ fn spawn_thread<M>(metric: M, sender: mpsc::Sender<(String, HashMap<String, Meta
             };
             let metadata = metric.get_metadata(comment, sequence_no);
             match sender.send(metadata).await {
-                Ok(_) => {},
+                Ok(_) => {}
                 Err(_) => warn!("Failed to send metadata result"),
             };
         }
@@ -35,7 +41,14 @@ fn spawn_thread<M>(metric: M, sender: mpsc::Sender<(String, HashMap<String, Meta
 
 /// Spawn threads to process metadata
 /// Returns a vector of join handles, a sender to send messages to the threads, and a receiver to recieve messages from the threads
-pub async fn get_metadata(twitch: &TwitchAPIWrapper) -> (HashMap<String, MetadataTypes>, Vec<JoinHandle<()>>, broadcast::Sender<(Comment, u32)>, mpsc::Receiver<(String, HashMap<String, MetadataTypes>)>) {
+pub async fn get_metadata(
+    twitch: &TwitchAPIWrapper,
+) -> (
+    HashMap<String, MetadataTypes>,
+    Vec<JoinHandle<()>>,
+    broadcast::Sender<(Comment, u32)>,
+    mpsc::Receiver<(String, HashMap<String, MetadataTypes>)>,
+) {
     /*
     Spawn threads to process metadata
     Returns a vector of join handles, a sender to send messages to the threads, and a receiver to recieve messages from the threads
@@ -46,16 +59,24 @@ pub async fn get_metadata(twitch: &TwitchAPIWrapper) -> (HashMap<String, Metadat
     let (mpsc_sender, mpsc_receiver) = mpsc::channel(100000);
 
     // Initialize the metadata
-    let badges = badges::Badges::new(&twitch).await;
-    let special_role = special_role::SpecialRole::new(&twitch).await;
+    let badges = badges::Badges::new(twitch).await;
+    let special_role = special_role::SpecialRole::new(twitch).await;
 
     // Add names and default values to the metadata
     metadata.insert(badges.get_name(), badges.get_default_value());
     metadata.insert(special_role.get_name(), special_role.get_default_value());
 
     // Spawn threads for each metadata
-    handles.push(spawn_thread(badges, mpsc_sender.clone(), broadcast_receiver.resubscribe()));
-    handles.push(spawn_thread(special_role, mpsc_sender.clone(), broadcast_receiver.resubscribe()));
-    
+    handles.push(spawn_thread(
+        badges,
+        mpsc_sender.clone(),
+        broadcast_receiver.resubscribe(),
+    ));
+    handles.push(spawn_thread(
+        special_role,
+        mpsc_sender.clone(),
+        broadcast_receiver.resubscribe(),
+    ));
+
     (metadata, handles, broadcast_sender, mpsc_receiver)
 }

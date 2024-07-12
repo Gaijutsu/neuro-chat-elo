@@ -1,10 +1,10 @@
-mod leaderboardtrait;
 mod bitsonly;
 mod chatonly;
 mod copypastaleaders;
+mod leaderboardtrait;
+mod nonvips;
 mod overall;
 mod subsonly;
-mod nonvips;
 
 use crate::leaderboards::leaderboardtrait::AbstractLeaderboard;
 

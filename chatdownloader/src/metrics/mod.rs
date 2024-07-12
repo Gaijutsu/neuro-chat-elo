@@ -1,13 +1,12 @@
-pub mod metrictrait;
 pub mod bits;
-pub mod subs;
-pub mod text;
 pub mod copypastaleader;
 pub mod emote;
+pub mod metrictrait;
+pub mod subs;
+pub mod text;
 
-
-use std::collections::HashMap;
 use log::warn;
+use std::collections::HashMap;
 use tokio::sync::broadcast;
 use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
@@ -15,8 +14,14 @@ use tokio::task::JoinHandle;
 use crate::_types::twitchtypes::Comment;
 use crate::metrics::metrictrait::AbstractMetric;
 
-fn spawn_thread<M>(mut metric: M, sender: mpsc::Sender<(String, HashMap<String, f32>)>, mut reciever: broadcast::Receiver<(Comment, u32)>) -> JoinHandle<()>  
-        where M: AbstractMetric + Sync + Send + 'static {
+fn spawn_thread<M>(
+    mut metric: M,
+    sender: mpsc::Sender<(String, HashMap<String, f32>)>,
+    mut reciever: broadcast::Receiver<(Comment, u32)>,
+) -> JoinHandle<()>
+where
+    M: AbstractMetric + Sync + Send + 'static,
+{
     /*
     Spawn a thread to update the metadata based on chat messages sent by a tokio broadcast channel
     */
@@ -28,21 +33,26 @@ fn spawn_thread<M>(mut metric: M, sender: mpsc::Sender<(String, HashMap<String, 
             };
             let metric_result = metric.get_metric(comment, sequence_no);
             match sender.send(metric_result).await {
-                Ok(_) => {},
+                Ok(_) => {}
                 Err(_) => warn!("Failed to send metric result"),
             };
         }
         let metric_result = metric.finish();
         match sender.send(metric_result).await {
-            Ok(_) => {},
-            Err(_) => warn!("Failed to send final metric result")
+            Ok(_) => {}
+            Err(_) => warn!("Failed to send final metric result"),
         };
     })
 }
 
 /// Spawn threads to process metrics
 /// Returns a vector of join handles, a sender to send messages to the threads, and a receiver to recieve messages from the threads
-pub async fn get_metrics() -> (HashMap<String, f32>, Vec<JoinHandle<()>>, broadcast::Sender<(Comment, u32)>, mpsc::Receiver<(String, HashMap<String, f32>)>) {
+pub async fn get_metrics() -> (
+    HashMap<String, f32>,
+    Vec<JoinHandle<()>>,
+    broadcast::Sender<(Comment, u32)>,
+    mpsc::Receiver<(String, HashMap<String, f32>)>,
+) {
     /*
     Spawn threads to process metadata
     Returns a vector of join handles, a sender to send messages to the threads, and a receiver to recieve messages from the threads
@@ -67,11 +77,31 @@ pub async fn get_metrics() -> (HashMap<String, f32>, Vec<JoinHandle<()>>, broadc
     metrics.insert(emote.get_name(), 0.0);
 
     // Spawn threads for each metric
-    handles.push(spawn_thread(bits, mpsc_sender.clone(), broadcast_receiver.resubscribe()));
-    handles.push(spawn_thread(subs, mpsc_sender.clone(), broadcast_receiver.resubscribe()));
-    handles.push(spawn_thread(text, mpsc_sender.clone(), broadcast_receiver.resubscribe()));
-    handles.push(spawn_thread(copypastaleader, mpsc_sender.clone(), broadcast_receiver.resubscribe()));
-    handles.push(spawn_thread(emote, mpsc_sender.clone(), broadcast_receiver.resubscribe()));
-    
+    handles.push(spawn_thread(
+        bits,
+        mpsc_sender.clone(),
+        broadcast_receiver.resubscribe(),
+    ));
+    handles.push(spawn_thread(
+        subs,
+        mpsc_sender.clone(),
+        broadcast_receiver.resubscribe(),
+    ));
+    handles.push(spawn_thread(
+        text,
+        mpsc_sender.clone(),
+        broadcast_receiver.resubscribe(),
+    ));
+    handles.push(spawn_thread(
+        copypastaleader,
+        mpsc_sender.clone(),
+        broadcast_receiver.resubscribe(),
+    ));
+    handles.push(spawn_thread(
+        emote,
+        mpsc_sender.clone(),
+        broadcast_receiver.resubscribe(),
+    ));
+
     (metrics, handles, broadcast_sender, mpsc_receiver)
 }
