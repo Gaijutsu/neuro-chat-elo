@@ -39,9 +39,9 @@ async fn main() {
         Ok(chat_log) => chat_log,
         Err(e) => panic!("Failed to download chat: {e:?}"),
     };
-    // let chat_log = processor.__parse_to_log_struct("chat.json".to_string());
 
     let processor = chatlogprocessor::ChatLogProcessor::new(&twitch);
+    // let chat_log = processor.__parse_to_log_struct("chat.json".to_string());
     let user_performances = processor.parse_from_log_object(chat_log).await;
     chatlogprocessor::ChatLogProcessor::export_to_leaderboards(user_performances);
 }

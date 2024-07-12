@@ -100,7 +100,7 @@ impl AbstractMetric for Emote {
         comment: Comment,
         _sequence_no: u32,
     ) -> (String, HashMap<String, f32>) {
-        let metric = comment
+        let score: f32 = comment
             .message
             .fragments
             .iter()
@@ -110,8 +110,6 @@ impl AbstractMetric for Emote {
                     * WEIGHT_EMOTES
             })
             .sum();
-        let mut result = HashMap::new();
-        result.insert("emote".to_owned(), metric);
-        (self.get_name(), result)
+        self._shortcut_for_this_comment_user(comment, score)
     }
 }
