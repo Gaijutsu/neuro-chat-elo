@@ -38,7 +38,9 @@ impl MetadataTypes {
     }
     pub fn get_basic_info(&self) -> Option<(String, String)> {
         match self {
-            MetadataTypes::BasicInfo(username, avatar) => Some((username.to_string(), avatar.to_string())),
+            MetadataTypes::BasicInfo(username, avatar) => {
+                Some((username.to_string(), avatar.to_string()))
+            }
             _ => None,
         }
     }

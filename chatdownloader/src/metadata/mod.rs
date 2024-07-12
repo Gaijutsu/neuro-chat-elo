@@ -1,7 +1,7 @@
 pub mod badges;
+pub mod basic_info;
 pub mod metadatatrait;
 pub mod special_role;
-pub mod basic_info;
 
 use log::warn;
 use std::collections::HashMap;
