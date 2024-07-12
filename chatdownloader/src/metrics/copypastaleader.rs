@@ -29,14 +29,14 @@ impl AbstractMetric for CopypastaLeader {
         String::from("copypasta")
     }
 
-    fn get_metric(&mut self, comment: Comment, sequence_no: u32) -> HashMap<String, f32> {
+    fn get_metric(&mut self, comment: Comment, sequence_no: u32) -> (String, HashMap<String, f32>) {
         let text = comment.message.fragments.iter()
             .map(|fragment| fragment.text.clone())
             .collect::<Vec<String>>()
             .join(" ");
 
         if text.is_empty() {
-            return HashMap::new();
+            return (self.get_name(), HashMap::new());
         }
 
         // Evaluate or initialize the list
@@ -80,11 +80,11 @@ impl AbstractMetric for CopypastaLeader {
             result.insert(item.2.clone(), (item.0 - item.3) as f32 * WEIGHT_COPYPASTA);
         }
 
-        result
+        (self.get_name(), result)
     }
 
-    fn finish(&self) -> HashMap<String, f32> {
-        self.finish()
+    fn finish(&self) -> (String, HashMap<String, f32>) {
+        (self.get_name(), self.finish())
     }
 }
 

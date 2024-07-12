@@ -35,7 +35,7 @@ impl AbstractMetric for Subs {
         String::from("subs")
     }
 
-    fn get_metric(&mut self, comment: Comment, _sequence_no: u32) -> HashMap<String, f32> {
+    fn get_metric(&mut self, comment: Comment, _sequence_no: u32) -> (String, HashMap<String, f32>) {
         let total_subs: i32 = comment.message.fragments.iter()
             .map(no_of_gifted_subs)
             .sum();

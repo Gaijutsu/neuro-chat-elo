@@ -61,7 +61,7 @@ pub struct Comment {
     pub commenter: ChatUserInfo,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct ChatLog {
     /*
     Represents a chat log.

@@ -7,7 +7,7 @@ use crate::_types::twitchtypes::Comment;
 use crate::_types::clptypes::MetadataTypes;
 use crate::twitch_utils::TwitchAPIWrapper;
 
-pub trait AbstractMetadata {
+pub trait AbstractMetadata: Sized {
     /*
     Structs that implement this trait represent a piece of metadata
 
@@ -15,7 +15,7 @@ pub trait AbstractMetadata {
     if it needs to make API calls
     */
 
-    async fn new(twitch: TwitchAPIWrapper) -> Self where Self: Sized;
+    async fn new(twitch: &TwitchAPIWrapper) -> Self where Self: Sized + Send;
         /*
         Create a new metadata object
 
@@ -32,7 +32,7 @@ pub trait AbstractMetadata {
         Get the default value for this metadata
         */
 
-    fn get_metadata(&self, comment: Comment, sequence_no: u32) -> HashMap<String, MetadataTypes>;
+    fn get_metadata(&self, comment: Comment, sequence_no: u32) -> (String, HashMap<String, MetadataTypes>);
         /*
         Get information about a user from a chat message
 

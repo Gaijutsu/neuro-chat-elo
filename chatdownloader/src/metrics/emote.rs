@@ -94,7 +94,7 @@ impl AbstractMetric for Emote {
         String::from("emote")
     }
 
-    fn get_metric(&mut self, comment: Comment, _sequence_no: u32) -> HashMap<String, f32> {
+    fn get_metric(&mut self, comment: Comment, _sequence_no: u32) -> (String, HashMap<String, f32>) {
         let metric = comment
             .message
             .fragments
@@ -107,6 +107,6 @@ impl AbstractMetric for Emote {
             .sum();
         let mut result = HashMap::new();
         result.insert("emote".to_owned(), metric);
-        result
+        (self.get_name(), result)
     }
 }

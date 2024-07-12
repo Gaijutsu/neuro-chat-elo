@@ -15,7 +15,7 @@ pub struct Badges {
 }
 
 impl AbstractMetadata for Badges {
-    async fn new(twitch: TwitchAPIWrapper) -> Self {
+    async fn new(twitch: &TwitchAPIWrapper) -> Self {
         let badges = twitch.get_badges(VED_CH_ID.to_string()).await.unwrap();
         Self {
             badges
@@ -30,14 +30,14 @@ impl AbstractMetadata for Badges {
         MetadataTypes::BadgeList(vec![])
     }
 
-    fn get_metadata(&self, comment: Comment, _sequence_no: u32) -> HashMap<String, MetadataTypes> {
+    fn get_metadata(&self, comment: Comment, _sequence_no: u32) -> (String, HashMap<String, MetadataTypes>) {
         let mut metadata: Vec<BadgeInformation> = vec![];
         let user_badges = if let Some(user_badges) = comment.message.user_badges {
             user_badges
         } else {
             let mut out: HashMap<String, MetadataTypes> = HashMap::new();
             out.insert(comment.commenter._id.clone(), MetadataTypes::BadgeList(vec![]));
-            return out;
+            return (self.get_name(), out);
         };
         for badge in user_badges {
             let badge_set = self.badges.get(&badge._id);
@@ -56,6 +56,6 @@ impl AbstractMetadata for Badges {
                 .clone()
             );
         };
-        HashMap::from([(comment.commenter._id.clone(), MetadataTypes::BadgeList(metadata))])
+        (self.get_name(), HashMap::from([(comment.commenter._id.clone(), MetadataTypes::BadgeList(metadata))]))
     }
 }

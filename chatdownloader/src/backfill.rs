@@ -29,10 +29,15 @@ pub async fn backfill() {
 
     for video_id in VIDEO_IDS.iter() {
         info!("Backfilling for video ID: {}", video_id);
-        let chat_log = downloader.download_chat(video_id).await.unwrap();
+        // let chat_log = downloader.download_chat(video_id).await.unwrap();
+        let chat_log = match downloader.download_chat(video_id).await {
+            Ok(chat_log) => chat_log,
+            Err(e) => panic!("Could not download chat log: {e:?}")
+        };
 
-        let processor = ChatLogProcessor::new(&twitch);
-        let user_performances = processor.parse_from_log_object(chat_log).await;
+        let user_performances = ChatLogProcessor::new(&twitch)
+            .parse_from_log_object(chat_log)
+            .await;
 
         ChatLogProcessor::export_to_leaderboards(user_performances);
     }
