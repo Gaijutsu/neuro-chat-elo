@@ -1,6 +1,7 @@
 /*
 Publically accessible leaderboard types
 */
+use crate::_types::clptypes::PerformanceType;
 
 use super::clptypes::BadgeInformation;
 use serde::{Deserialize, Serialize};
@@ -8,6 +9,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct LeaderboardExportItem {
     pub id: String,
+    pub perf_type: PerformanceType,
     pub rank: u32,
     pub elo: f32,
     pub username: String,
@@ -19,6 +21,7 @@ pub struct LeaderboardExportItem {
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct LeaderboardInnerState {
     pub id: String,
+    pub perf_type: PerformanceType,
     pub username: String,
     pub avatar: String,
     pub badges: Option<Vec<BadgeInformation>>,

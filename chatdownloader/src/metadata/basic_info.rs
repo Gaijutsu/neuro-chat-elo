@@ -4,7 +4,7 @@ Get the username and avatar of the user
 
 use std::collections::HashMap;
 
-use crate::_types::clptypes::MetadataTypes;
+use crate::_types::clptypes::{MetadataTypes, PerformanceType};
 use crate::_types::twitchtypes::Comment;
 use crate::metadata::metadatatrait::AbstractMetadata;
 use crate::twitch_utils::TwitchAPIWrapper;
@@ -26,7 +26,7 @@ impl AbstractMetadata for BasicInfo {
     }
 
     fn get_default_value(&self) -> MetadataTypes {
-        MetadataTypes::BasicInfo("".to_string(), "".to_string())
+        MetadataTypes::BasicInfo("".to_string(), "".to_string(), PerformanceType::User)
     }
 
     fn get_metadata(
@@ -40,6 +40,7 @@ impl AbstractMetadata for BasicInfo {
             MetadataTypes::BasicInfo(
                 comment.commenter.display_name.clone(),
                 comment.commenter.logo.clone(),
+                PerformanceType::User,
             ),
         );
         (self.get_name(), metadata)

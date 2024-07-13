@@ -1,4 +1,4 @@
-use crate::_types::clptypes::{BadgeInformation, UserChatPerformance};
+use crate::_types::clptypes::{BadgeInformation, ChatPerformance, PerformanceType};
 use crate::_types::leaderboardtypes::{LeaderboardExportItem, LeaderboardInnerState};
 use log::{debug, info};
 use serde_json::Value;
@@ -16,7 +16,9 @@ pub trait AbstractLeaderboard {
 
     fn __get_state(&mut self) -> &mut HashMap<String, LeaderboardInnerState>;
 
-    fn calculate_score(&self, performance: &UserChatPerformance) -> Option<f32>;
+    fn __performance_type(&self) -> PerformanceType;
+
+    fn calculate_score(&self, performance: &ChatPerformance) -> Option<f32>;
 
     fn read_initial_state(&mut self) {
         info!("Loading {} leaderboard...", self.get_name());
@@ -28,12 +30,14 @@ pub trait AbstractLeaderboard {
 
         let data = fs::read_to_string(&path).expect("Unable to read file");
         let items: Vec<Value> = serde_json::from_str(&data).expect("JSON was not well-formatted");
+        let perf_type = self.__performance_type();
         self.__get_state().extend(items.into_iter().map(|item| {
             let export_item: LeaderboardExportItem = serde_json::from_value(item).unwrap();
             (
                 export_item.id.clone(),
                 LeaderboardInnerState {
                     id: export_item.id.clone(),
+                    perf_type,
                     username: export_item.username,
                     avatar: export_item.avatar,
                     badges: export_item.badges,
@@ -47,7 +51,10 @@ pub trait AbstractLeaderboard {
         info!("{} leaderboard loading ok", self.get_name());
     }
 
-    fn update_leaderboard(&mut self, performance: UserChatPerformance) {
+    fn update_leaderboard(&mut self, performance: ChatPerformance) {
+        if performance.perf_type != self.__performance_type() {
+            return;
+        }
         debug!(
             "Updating {} leaderboard with performance: {:?}",
             self.get_name(),
@@ -57,11 +64,13 @@ pub trait AbstractLeaderboard {
             debug!("Score for the above is {}", score);
 
             let id = performance.id.clone();
+            let perf_type = performance.perf_type;
             let entry = self
                 .__get_state()
                 .entry(performance.id)
                 .or_insert(LeaderboardInnerState {
                     id,
+                    perf_type,
                     username: performance.username.clone(),
                     avatar: performance.avatar.clone(),
                     badges: None,
@@ -84,11 +93,13 @@ pub trait AbstractLeaderboard {
     fn save(&mut self) {
         info!("Saving {} leaderboard...", self.get_name());
         self.__calculate_new_elo();
+        let perf_type = self.__performance_type();
         let to_save: Vec<LeaderboardExportItem> = self
             .__get_state()
             .values()
             .map(|inner_state| LeaderboardExportItem {
                 id: inner_state.id.clone(),
+                perf_type,
                 rank: 0,
                 elo: inner_state.elo,
                 username: inner_state.username.clone(),

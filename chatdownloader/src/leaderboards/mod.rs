@@ -8,11 +8,13 @@ mod subsonly;
 
 use tokio::{sync::broadcast, task::JoinHandle};
 
-use crate::{_types::clptypes::UserChatPerformance, leaderboards::leaderboardtrait::AbstractLeaderboard};
+use crate::{
+    _types::clptypes::ChatPerformance, leaderboards::leaderboardtrait::AbstractLeaderboard,
+};
 
 fn spawn_thread<M>(
     mut leaderboard: M,
-    mut reciever: broadcast::Receiver<UserChatPerformance>,
+    mut reciever: broadcast::Receiver<ChatPerformance>,
 ) -> JoinHandle<()>
 where
     M: AbstractLeaderboard + Sync + Send + 'static,
@@ -22,11 +24,11 @@ where
     */
     tokio::task::spawn(async move {
         loop {
-            let user_chat_performance: UserChatPerformance = match reciever.recv().await {
-                Ok(user_chat_performance) => user_chat_performance,
+            let chat_performance: ChatPerformance = match reciever.recv().await {
+                Ok(chat_performance) => chat_performance,
                 Err(_) => break,
             };
-            leaderboard.update_leaderboard(user_chat_performance);
+            leaderboard.update_leaderboard(chat_performance);
         }
         leaderboard.save()
     })
@@ -34,10 +36,7 @@ where
 
 /// Spawn threads to process metadata
 /// Returns a vector of join handles, a sender to send messages to the threads, and a receiver to recieve messages from the threads
-pub fn get_leaderboards() -> (
-    Vec<JoinHandle<()>>,
-    broadcast::Sender<UserChatPerformance>,
-) {
+pub fn get_leaderboards() -> (Vec<JoinHandle<()>>, broadcast::Sender<ChatPerformance>) {
     /*
     Spawn threads to process leaderboard
     Returns a vector of join handles and a sender to send messages to the threads
@@ -45,7 +44,6 @@ pub fn get_leaderboards() -> (
     let mut handles = vec![];
     let (broadcast_sender, broadcast_receiver) = broadcast::channel(100000);
 
-    
     // Initialize the leaderboards
     let bitsonly = bitsonly::BitsOnly::new();
     let chatonly = chatonly::ChatOnly::new();
@@ -55,30 +53,12 @@ pub fn get_leaderboards() -> (
     let subsonly = subsonly::SubsOnly::new();
 
     // Spawn threads for each metadata
-    handles.push(spawn_thread(
-        bitsonly,
-        broadcast_receiver.resubscribe(),
-    ));
-    handles.push(spawn_thread(
-        chatonly,
-        broadcast_receiver.resubscribe(),
-    ));
-    handles.push(spawn_thread(
-        copypasta,
-        broadcast_receiver.resubscribe(),
-    ));
-    handles.push(spawn_thread(
-        nonvips,
-        broadcast_receiver.resubscribe(),
-    ));
-    handles.push(spawn_thread(
-        overall,
-        broadcast_receiver.resubscribe(),
-    ));
-    handles.push(spawn_thread(
-        subsonly,
-        broadcast_receiver.resubscribe(),
-    ));
+    handles.push(spawn_thread(bitsonly, broadcast_receiver.resubscribe()));
+    handles.push(spawn_thread(chatonly, broadcast_receiver.resubscribe()));
+    handles.push(spawn_thread(copypasta, broadcast_receiver.resubscribe()));
+    handles.push(spawn_thread(nonvips, broadcast_receiver.resubscribe()));
+    handles.push(spawn_thread(overall, broadcast_receiver.resubscribe()));
+    handles.push(spawn_thread(subsonly, broadcast_receiver.resubscribe()));
 
     (handles, broadcast_sender)
 }

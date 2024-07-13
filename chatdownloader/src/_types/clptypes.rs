@@ -2,12 +2,20 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
-pub struct UserChatPerformance {
+pub struct ChatPerformance {
     pub id: String,
+    pub perf_type: PerformanceType,
     pub username: String,
     pub avatar: String,
     pub metrics: HashMap<String, f32>,
     pub metadata: HashMap<String, MetadataTypes>,
+}
+
+#[derive(Deserialize, Serialize, PartialEq, Debug, Clone, Copy)]
+pub enum PerformanceType {
+    User,
+    Emote,
+    Unknown,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
@@ -20,7 +28,7 @@ pub struct BadgeInformation {
 pub enum MetadataTypes {
     Bool(bool),
     BadgeList(Vec<BadgeInformation>),
-    BasicInfo(String, String),
+    BasicInfo(String, String, PerformanceType),
 }
 
 impl MetadataTypes {
@@ -36,10 +44,10 @@ impl MetadataTypes {
             _ => None,
         }
     }
-    pub fn get_basic_info(&self) -> Option<(String, String)> {
+    pub fn get_basic_info(&self) -> Option<(String, String, PerformanceType)> {
         match self {
-            MetadataTypes::BasicInfo(username, avatar) => {
-                Some((username.to_string(), avatar.to_string()))
+            MetadataTypes::BasicInfo(username, avatar, perf_type) => {
+                Some((username.to_string(), avatar.to_string(), *perf_type))
             }
             _ => None,
         }

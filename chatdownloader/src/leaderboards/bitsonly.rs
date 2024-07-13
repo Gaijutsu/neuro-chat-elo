@@ -2,7 +2,7 @@
 Bits leaderboard
 */
 
-use crate::_types::clptypes::UserChatPerformance;
+use crate::_types::clptypes::{ChatPerformance, PerformanceType};
 use crate::_types::leaderboardtypes::LeaderboardInnerState;
 use crate::leaderboards::leaderboardtrait::AbstractLeaderboard;
 use std::collections::HashMap;
@@ -31,7 +31,11 @@ impl AbstractLeaderboard for BitsOnly {
         &mut self.state
     }
 
-    fn calculate_score(&self, performance: &UserChatPerformance) -> Option<f32> {
+    fn __performance_type(&self) -> PerformanceType {
+        PerformanceType::User
+    }
+
+    fn calculate_score(&self, performance: &ChatPerformance) -> Option<f32> {
         Some(performance.metrics.get("bits").unwrap_or(&0.0) * K)
     }
 }
